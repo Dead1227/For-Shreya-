@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>25.12 // Archive</title>
+    <style>
+        body {
+            margin: 0; background-color: #f0ede5;
+            background-image: radial-gradient(#d1d1d1 0.5px, #f0ede5 0.5px);
+            background-size: 20px 20px; font-family: -apple-system, sans-serif;
+            height: 100vh; overflow: hidden;
+        }
+
+        #auraCanvas { position: absolute; top: 0; left: 0; z-index: 1; filter: blur(80px); opacity: 0.4; }
+
+        .polaroid {
+            position: absolute; background: white; padding: 6px 6px 25px 6px;
+            box-shadow: 5px 10px 20px rgba(0,0,0,0.15); opacity: 0;
+            transform: scale(0.2); transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2;
+        }
+
+        .polaroid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .polaroid::before { content: "📎"; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-size: 18px; z-index: 10; }
+
+        /* Placements */
+        .p1 { width: 100px; height: 120px; top: 5%; left: 5%; }
+        .p2 { width: 130px; height: 130px; top: 2%; left: 35%; }
+        .p3 { width: 110px; height: 150px; top: 4%; right: 5%; }
+        .p4 { width: 140px; height: 100px; top: 25%; left: -5%; }
+        .p5 { width: 90px; height: 90px; top: 28%; right: 8%; }
+        .p6 { width: 120px; height: 140px; bottom: 18%; left: 2%; } 
+        .p7 { width: 140px; height: 110px; bottom: 18%; right: 2%; }
+        .p8 { width: 100px; height: 100px; bottom: 45%; left: 35%; }
+
+        .p1.show { opacity: 1; transform: scale(1) rotate(-12deg); }
+        .p2.show { opacity: 1; transform: scale(1) rotate(5deg); }
+        .p3.show { opacity: 1; transform: scale(1) rotate(15deg); }
+        .p4.show { opacity: 1; transform: scale(1) rotate(-5deg); }
+        .p5.show { opacity: 1; transform: scale(1) rotate(10deg); }
+        .p6.show { opacity: 1; transform: scale(1) rotate(-8deg); z-index: 2000; } 
+        .p7.show { opacity: 1; transform: scale(1) rotate(12deg); z-index: 2000; }
+        .p8.show { opacity: 1; transform: scale(1) rotate(-3deg); }
+
+        #ui-layer {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); z-index: 3000;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(15px); padding: 25px;
+            width: 80%; max-width: 300px; border-radius: 24px;
+            text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+            cursor: pointer;
+        }
+
+        #ui-layer.minimized { top: 85%; transform: translate(-50%, 0); padding: 15px; }
+
+        .typing-text { font-size: 0.95rem; color: #333; margin-bottom: 20px; min-height: 80px; line-height: 1.6; pointer-events: none; }
+        
+        #action-btn {
+            background: #111; color: white; border: none; padding: 15px;
+            border-radius: 50px; font-size: 0.85rem;
+            width: 100%; font-weight: 600; text-transform: uppercase;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<audio id="bgMusic" loop>
+    <source src="https://www.bensound.com/bensound-music/bensound-love.mp3" type="audio/mpeg">
+</audio>
+
+<canvas id="auraCanvas"></canvas>
+
+<div class="scrapbook-canvas">
+    <div id="p1" class="polaroid p1"><img src="https://i.ibb.co/TxTj7bK2/Screenshot-2025-12-26-13-08-16-93-e2d5b3f32b79de1d45acd1fad96fbb0f.jpg"></div>
+    <div id="p2" class="polaroid p2"><img src="https://i.ibb.co/B2JPjck5/Screenshot-2025-12-26-13-08-10-96-e2d5b3f32b79de1d45acd1fad96fbb0f.jpg"></div>
+    <div id="p3" class="polaroid p3"><img src="https://i.ibb.co/LzV7scLD/Screenshot-2025-12-26-13-08-00-15-e2d5b3f32b79de1d45acd1fad96fbb0f.jpg"></div>
+    <div id="p4" class="polaroid p4"><img src="https://i.ibb.co/T9dWWgM/Screenshot-2025-12-26-13-07-53-09-e2d5b3f32b79de1d45acd1fad96fbb0f.jpg"></div>
+    <div id="p5" class="polaroid p5"><img src="https://i.ibb.co/ZzMKTMSW/Screenshot-2025-12-26-13-07-28-71-e2d5b3f32b79de1d45acd1fad96fbb0f.jpg"></div>
+    <div id="p6" class="polaroid p6"><img src="https://i.ibb.co/nsvZFky1/Screenshot-2025-12-26-13-07-46-52-e2d5b3f32b79de1d45acd1fad96fbb0f.jpg"></div>
+    <div id="p7" class="polaroid p7"><img src="https://i.ibb.co/jkTn4d8V/Screenshot-2025-12-26-13-07-23-65-e2d5b3f32b79de1d45acd1fad96fbb0f.jpg"></div>
+    <div id="p8" class="polaroid p8"><img src="https://i.ibb.co/1tDc1Hs1/Screenshot-2025-12-26-13-07-13-68-e2d5b3f32b79de1d45acd1fad96fbb0f.jpg"></div>
+
+    <div id="ui-layer" onclick="handleInteraction()">
+        <div class="typing-text" id="text-display">Tap to unlock your gift... 🎁</div>
+        <button id="action-btn">Next ✨</button>
+    </div>
+</div>
+
+<script>
+    const textDisplay = document.getElementById('text-display');
+    const actionBtn = document.getElementById('action-btn');
+    const uiLayer = document.getElementById('ui-layer');
+    const music = document.getElementById('bgMusic');
+    
+    let stepIdx = 0;
+    let isTyping = false;
+
+    const steps = [
+        { text: "Finally, happy birthday! 🥂 Honestly, finding a gift that matches your taste was a task... so I built this archive specifically for you.", btn: "Dekhte hain... ✨" },
+        { text: "Generic gifts toh 'everyday' log dete hain. 🎁 But for you, it had to be something abstract, clean, and original.", btn: "Keep going 😍" },
+        { text: "I know you appreciate the smaller details, the aesthetic, and the peace that comes with it. 🌊", btn: "True... 🌸" },
+        { text: "So I wanted to curate a digital space that feels like 'you'. Minimal noise, maximum vibe. 🎞️", btn: "Show me... ✨" },
+        { text: "Just a small reminder that you're the main character today. Stay original, stay you. 🦋", action: "revealAll", btn: "It's beautiful ❤️" },
+        { text: "I hope your year is filled with exactly this kind of peace. Abhi ye dekhliya ho toh insta pe aa final surprise ke liye. 😉✨", btn: "Go to Insta 📸" }
+    ];
+
+    function handleInteraction() {
+        if (isTyping) return;
+
+        if (stepIdx === 0) {
+            music.play().catch(() => {});
+            initAura(); animateAura();
+        }
+
+        if (stepIdx >= steps.length) {
+            window.location.href = "https://www.instagram.com/direct/inbox/";
+            return;
+        }
+
+        const data = steps[stepIdx];
+        
+        if (data.action === "revealAll") {
+            uiLayer.classList.add('minimized');
+            for(let i=1; i<=8; i++) {
+                setTimeout(() => { document.getElementById('p'+i).classList.add('show'); }, i * 200);
+            }
+        }
+
+        isTyping = true;
+        actionBtn.style.opacity = "0.3";
+        actionBtn.innerText = "Typing...";
+        
+        let i = 0;
+        textDisplay.innerHTML = "";
+        const interval = setInterval(() => {
+            textDisplay.innerHTML += data.text.charAt(i);
+            i++;
+            if (i >= data.text.length) {
+                clearInterval(interval);
+                isTyping = false;
+                actionBtn.innerText = data.btn;
+                actionBtn.style.opacity = "1";
+                stepIdx++;
+            }
+        }, 35);
+    }
+
+    const canvas = document.getElementById('auraCanvas');
+    const ctx = canvas.getContext('2d');
+    let circles = [];
+    const colors = ['#f8ad9d', '#fbc4ab', '#ffdab9', '#ece4db'];
+
+    function initAura() {
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        for (let i = 0; i < 4; i++) {
+            circles.push({
+                x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+                r: Math.random()*200+150, color: colors[i],
+                vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5
+            });
+        }
+    }
+
+    function animateAura() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        circles.forEach(c => {
+            c.x += c.vx; c.y += c.vy;
+            if (c.x < 0 || c.x > canvas.width) c.vx *= -1;
+            if (c.y < 0 || c.y > canvas.height) c.vy *= -1;
+            ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI*2);
+            ctx.fillStyle = c.color; ctx.fill();
+        });
+        requestAnimationFrame(animateAura);
+    }
+</script>
+</body>
+</html>
